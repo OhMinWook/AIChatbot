@@ -40,7 +40,7 @@
 ✔️ **토큰 사용량 모니터링을 통한 비용 관리 최적화**  
 
 <div style="text-align: center;">
-  <img src="assets/image.png" alt="그림. 챗봇 Answer Process">
+  <img src="chatbot-be/docs/assets/image.png" alt="그림. 챗봇 Answer Process">
 </div>
 
 
