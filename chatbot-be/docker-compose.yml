@@ -1,0 +1,36 @@
+services:
+  huniverse-database:
+    container_name: huniverse-database
+    image: mysql:8.0
+    ports:
+      - "53306:3306"
+    volumes:
+      - ./volume/mysql_data:/var/lib/mysql
+      - ./volume/initdb_scripts:/docker-entrypoint-initdb.d
+    environment:
+      - TZ=Asia/Seoul
+      - MYSQL_ROOT_PASSWORD=wedata1016
+      - MYSQL_USER=huniverse
+      - MYSQL_PASSWORD=huniverse2024
+      - MYSQL_DATABASE=huniverse
+
+  huniverse-vectordb:
+    container_name: huniverse-vectordb
+    image: chromadb/chroma:0.5.4
+    ports:
+      - "58000:8000"
+    volumes:
+      - ./volume/chroma_data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=True
+      - ANONYMIZED_TELEMETRY=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma
+
+  # huniverse-proxy:
+  #   container_name: huniverse-proxy
+  #   image: nginx:1.27-alpine
+  #   ports:
+  #     - "50080:50080"
+  #   volumes:
+  #     - ./volume/nginx_data/nginx.conf:/etc/nginx/nginx.conf
+  #     - ./volume/shared-img:/var/www/shared-img

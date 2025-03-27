@@ -1,0 +1,21 @@
+version: 1
+disable_existing_loggers: False
+
+formatters:
+  default:
+    "()": uvicorn.logging.DefaultFormatter
+    fmt: "%(levelprefix)s %(message)s"
+
+handlers:
+  default:
+    class: logging.StreamHandler
+    formatter: default
+
+loggers:
+  uvicorn:
+    handlers: ["default"]
+    level: WARNING
+  uvicorn.error:
+    propagate: False
+  uvicorn.access:
+    propagate: False

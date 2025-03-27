@@ -1,0 +1,2407 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Huniverse",
+    "description": "Hide API",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "/wedatalab/api"
+    }
+  ],
+  "paths": {
+    "/auth/sign-in": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Sign In",
+        "description": "## DB 내 login_token 업데이트 및 set_cookie\n### Args:\n    login_id: 유저 이메일 (str)\n    password: 유저 비밀번호 (str)\n\n### Raises:\n    SignInFailedException: 이메일 or 비밀번호 틀림 (401, 'Unauthorized')\n\n### Returns:\n    status: (200, 'OK')\n    data: null",
+        "operationId": "sign_in_auth_sign_in_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignInRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/sign-out": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Sign Out",
+        "description": "## delete_cookie\n### Args:\n\n### Raises:\n    로그인 상태 아닌데 요청 보내면\n    401 Unauthorized: Not exists session_id at cookie\n\n### Returns:\n    status: (200, 'OK')\n    data: null",
+        "operationId": "sign_out_auth_sign_out_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chatbot/": {
+      "get": {
+        "tags": ["chatbot"],
+        "summary": "Get All",
+        "description": "## 대화 내역 가져 오기\n## 무한 스크롤 방식 (요청마다 5개씩)\n\n### Args:\n    last_id: Optional[int] = 첫 요청일 때는 아예 값 안주셔도 되고 나머지 요청 시에는 이전 response의 가장 큰 id 값 넣어주시면 됩니다\n\n### Raises:\n\n\n### Returns:\n    status: (200, 'OK')\n    data: [\n        {\n            \"id\": 1,\n            \"question_content\": \"~~\",\n            \"answer_content\": \"~~\",\n            \"screen_id\": \"~~\",\n            \"image_path\": \"~~\",\n            \"manual_path\": \"~~\",\n            \"dgstfn\": 4.5\n        },\n        ...\n    ]",
+        "operationId": "get_all_chatbot__get",
+        "parameters": [
+          {
+            "name": "last_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": 0,
+              "title": "Last Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["chatbot"],
+        "summary": "Question",
+        "description": "## 질문 및 답변 반환\n## call_path를 path param으로 둔 이유는 페이지 호출(user), api 호출 (api)로 분리해야 해서,,\n\n### Args:\n    question_content: str = 질문 내용\n    call_path: str = user | api 둘 중 하나 값 (호출 경로 분리해야 해서 & default 값 api라서 )\n\n### Raises:\n    fastapi.exceptions.RequestValidationError: call_path에 user/api 값이 아닌 게 들어간 경우 (422, \"Unprocessable Entity\")\n\n### Returns:\n    status: (200, 'OK')\n    Response body : 답변",
+        "operationId": "question_chatbot__post",
+        "deprecated": true,
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chatbot/answer": {
+      "get": {
+        "tags": ["chatbot"],
+        "summary": "Answer Deprecated",
+        "operationId": "answer_deprecated_chatbot_answer_get",
+        "deprecated": true,
+        "parameters": [
+          {
+            "name": "question_content",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Question Content"
+            }
+          },
+          {
+            "name": "call_path",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(user|api)$",
+              "default": "api",
+              "title": "Call Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["chatbot"],
+        "summary": "Answer",
+        "description": "## 답변 생성에 참조한 메뉴얼 정보 반환\n\n### Args:\n    인자는 위의 POST /chatbot/와 동일하게 주시면 됩니다!\n    question_content: str = 질문 내용\n    call_path: str = user | api 둘 중 하나 값 (호출 경로 분리해야 해서 & default 값 api라서 )\n\n### Raises:\n\n### Returns:\n    status: (200, 'OK')\n    data: {\n        \"id\": 1,\n        \"question_content\": \"~~\",\n        \"answer_content\": \"~~\",\n        \"screen_id\": \"~~\",\n        \"image_path\": \"~~\",\n        \"manual_path\": \"~~\",\n        \"dgstfn\": 4.5\n        \"date\": unix time 형태 날짜..\n    }",
+        "operationId": "answer_chatbot_answer_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chatbot/rate": {
+      "patch": {
+        "tags": ["chatbot"],
+        "summary": "Rate",
+        "description": "## 답변 만족도 등록\n\n### Args:\n    id: int = 채팅 id\n    dgstfn: Decimal = 0 ~ 5 사이 별점. 소숫점은 .5만 가능\n\n### Raises:\n    RateValueException: Rate must be in 0 ~ 5 and decimal point must .0 or .5 = 별점 범위가 이상할 때 (400, \"Bad Request\")\n    ChatNotFoundException: Chat Id Not Found. = 잘못된 id 값 (404, \"Not Found\")\n\n### Returns:\n    status: (200, 'OK')\n    data: null",
+        "operationId": "rate_chatbot_rate_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chatbot/report": {
+      "post": {
+        "tags": ["chatbot"],
+        "summary": "Report",
+        "description": "## 답변 불만족 시 report 제출\n\n### Args:\n    id: int = 채팅 id\n    report_content: str = report 내용\n\n### Raises:\n    ChatNotFoundException: Chat id Not Found. = 잘못된 id 값 (404, \"Not Found\")\n    이미 답변에 report 제출한 후 또 제출하려는 경우\n\n### Returns:\n    status: (200, 'OK')\n    data: null",
+        "operationId": "report_chatbot_report_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/common/auth": {
+      "get": {
+        "tags": ["admin-common"],
+        "summary": "Auth Menu",
+        "operationId": "auth_menu_admin_common_auth_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/common/manual": {
+      "get": {
+        "tags": ["admin-common"],
+        "summary": "Manual Search",
+        "operationId": "manual_search_admin_common_manual_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/common/answer": {
+      "get": {
+        "tags": ["admin-common"],
+        "summary": "Manual Search",
+        "operationId": "manual_search_admin_common_answer_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/auth/sign-in": {
+      "post": {
+        "tags": ["admin-auth"],
+        "summary": "Sign In",
+        "description": "## DB 내 login_token 업데이트 및 set_cookie\n### Args:\n    login_id: 유저 이메일 (str)\n    password: 유저 비밀번호 (str)\n\n### Raises:\n    SignInFailedException: 이메일 or 비밀번호 틀림 (401, 'Unauthorized')\n\n### Returns:\n    status: (200, 'OK')\n    data: null",
+        "operationId": "sign_in_admin_auth_sign_in_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignInRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/auth/sign-out": {
+      "post": {
+        "tags": ["admin-auth"],
+        "summary": "Sign Out",
+        "description": "## delete_cookie\n### Args:\n\n### Raises:\n    로그인 상태 아닌데 요청 보내면\n    401 Unauthorized: Not exists session_id at cookie\n\n### Returns:\n    status: (200, 'OK')\n    data: null",
+        "operationId": "sign_out_admin_auth_sign_out_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/answer": {
+      "get": {
+        "tags": ["admin-answer"],
+        "summary": "Get All Reports",
+        "description": "# 날짜안넣으면 전체조회\n## status: (200, 'OK')\n## data : [\n    {\n    \"report_id\": 1,\n    \"question_content\": \"로그인 어떻게 해?\",\n    \"answer_content\": \"로그인을 하려면 먼저 화면에 나타난 사번과 비밀번호란에 각각 사용자의 사번과 비밀번호를 입력해야 합니다. 그리고 \"LOGIN\" 버튼을 클릭하면 시스템에 인증이 됩니다.\",\n    \"report_content\": \"이건\",\n    \"creation_dt\": 1727265550\n  },\n  ###...\n ### parameter 로 start_dt와 end_dt 있고 unix_time으로 입력가능\n  ### report_content 통해서 검색가능\n]",
+        "operationId": "get_all_reports_admin_answer_get",
+        "parameters": [
+          {
+            "name": "page_no",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "title": "Page No"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "start_dt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start Dt"
+            }
+          },
+          {
+            "name": "end_dt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End Dt"
+            }
+          },
+          {
+            "name": "report_content",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Report Content"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/answer/report": {
+      "delete": {
+        "tags": ["admin-answer"],
+        "summary": "Delete Report",
+        "description": "# report 다중 삭제\n    ## status: (200, 'OK')\n    ## parameter : report_id (1,3 이렇게 입력해도 되고  1 이렇게 입력해도 됩니다.)\n     ### Returns:\n    ### status: (200, 'OK')\n    ### data: null\n### Raises:\n    ### ReportException: id list's element is not number = id_list에 숫자가 아닌 게 끼어있을 때 (400, \"Bad Request\")",
+        "operationId": "delete_report_admin_answer_report_delete",
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Comma separated report IDs to delete",
+              "title": "Report Id"
+            },
+            "description": "Comma separated report IDs to delete"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/answer/report/{report_id}": {
+      "get": {
+        "tags": ["admin-answer"],
+        "summary": "Get Report Detail",
+        "description": "## 관리자 report 상세 조회\n\n### Args:\n    report_id: int = 위 전체 조회 api response의 id 값 주시면 됩니다\n\n### Raises:\n    ReportNotFoundException: Report not found = 가져오려는 report no이 (404, \"Not Found\")\n\n### Returns:\n    status: (200, 'OK')\n    data: {\n        \"report_id\": 1,\n        \"question_content\": \"로그인 어떻게 해?\",\n        \"answer_content\": \"로그인을 하려면 먼저 화면에 나타난 사번과 비밀번호란에 각각 사용자의 사번과 비밀번호를 입력해야 합니다. 그리고 \"LOGIN\" 버튼을 클릭하면 시스템에 인증이 됩니다.\",\n        \"report_content\": \"이건\",\n        \"creation_dt\": 1727265550,\n        \"user_id\": 1,\n        \"screen_id\": null,\n        \"manual_name\": null,\n        \"manual_path\": null,\n        \"manual_id\": null\n    }",
+        "operationId": "get_report_detail_admin_answer_report__report_id__get",
+        "parameters": [
+          {
+            "name": "report_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Report Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/answer/{answer_id}": {
+      "get": {
+        "tags": ["admin-answer"],
+        "summary": "Get Answer",
+        "description": "## 관리자 답변 조회\n\n### Args:\n    answer_id: int = 반드시 1입니다.\n\n### Raises:\n    AnswerNotFoundException: Report not found = 가져오려는 answer이 없을때 발생-사실 이경우는 발생할수 없습니다. (404, \"Not Found\")\n\n### Returns:\n    status: (200, 'OK')\n    data: {\n         \"answer_id\": 1,\n         \"answer_content\": \"Updated answer content\"\n    }",
+        "operationId": "get_answer_admin_answer__answer_id__get",
+        "parameters": [
+          {
+            "name": "answer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Answer Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["admin-answer"],
+        "summary": "Update Answer",
+        "description": "## 관리자 답변 update\n\n### Args:\n    answer_id: int = 반드시 1입니다.\n\n### Request_body:\n    answer_content: \"Updated answer content\"\n\n### Returns:\n    status: (200, 'OK')\n    data: {}",
+        "operationId": "update_answer_admin_answer__answer_id__patch",
+        "parameters": [
+          {
+            "name": "answer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Answer Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAnswerRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/user/": {
+      "get": {
+        "tags": ["admin-user"],
+        "summary": "Get All Admin",
+        "description": "## 전체 관리자 목록 paginate 하여 보여주기\n\n### Args:\n    page_no: int = 요청할 페이지 번호\n    page_size: int = 한 번에 조회 할 관리자 수, 기본 값 50개 (10/30/50/100)\n    start_dt, end_dt: Optional[float] = 이 api는 일자 필터가 없어서 아예 안보내주셔도 됩니다\n\n### Raises:\n\n### Returns:\n    status: (200, 'OK')\n    data: [\n        {\n            \"id\": 1,\n            \"name\": \"현빈\",\n            \"dept_name\": \"경영지원\",\n            \"tel_no\": \"010-3333-5555\",\n            \"login_id\": \"Asdfwww\",\n            \"auth_menu_list\": \"최고 관리자\",\n            \"creation_dt\": 1726055378\n        },\n        ...\n    ]",
+        "operationId": "get_all_admin_admin_user__get",
+        "parameters": [
+          {
+            "name": "page_no",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "title": "Page No"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "start_dt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start Dt"
+            }
+          },
+          {
+            "name": "end_dt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End Dt"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["admin-user"],
+        "summary": "Create Admin",
+        "description": "## 관리자 등록\n\n### Args:\n    name: str\n    dept_name: str\n    tel_no: str (010-3333-3333 or 01033335555로 보내주시면 됩니다.)\n    login_id: str\n    password: str\n    password_check: str (비밀번호 확인)\n    auth_menu_list: str (1, 2, 3 or 1,2,3 띄어쓰기 구분 상관 없이)\n\n### Raises:\n    AdminException: User already exists = 아이디가 이미 있는 경우 (400, \"Bad Request\")\n    AdminException: Password mismatch = 비밀번호 확인 안맞을 때 (400, \"Bad Request\")\n    AdminNotFoundException: Admin not found = 업데이트 하려는 아이디가 없을 때 (404, \"Not Found\")\n\n### Returns:\n    status: (200, 'OK')\n    data: null",
+        "operationId": "create_admin_admin_user__post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAdminRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["admin-user"],
+        "summary": "Update Admin",
+        "description": "## 관리자 수정 (변경되지 않는 필드는 request에 주시는 건가요?)\n\n### Args:\n    id: int (detail 조회에 쓴 id)\n    name: str\n    dept_name: str\n    tel_no: str (010-3333-3333 or 01033335555로 보내주시면 됩니다.)\n    login_id: str\n    password: str\n    password_check: str (비밀번호 확인)\n    auth_menu_list: str (1, 2, 3 or 1,2,3 띄어쓰기 구분 상관 없이)\n\n### Raises:\n    AdminException: Password mismatch = 비밀번호 확인 안맞을 때 (400, \"Bad Request\")\n    AdminNotFoundException: Admin not found = 업데이트 하려는 아이디가 없을 때 (404, \"Not Found\")\n\n### Returns:\n    status: (200, 'OK')\n    data: null",
+        "operationId": "update_admin_admin_user__patch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAdminRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["admin-user"],
+        "summary": "Delete Admin",
+        "description": "## 관리자 삭제\n\n### Args:\n    id_list: str = \"1, 2, 3\" (리스트 [1, 2, 3]가 편하실까요? 문자열 \"1, 2, 3\"이 편하실까요?)\n\n### Raises:\n    AdminException: id list's element is not number = id_list에 숫자가 아닌 게 끼어있을 때 (400, \"Bad Request\")\n\n### Returns:\n    status: (200, 'OK')\n    data: null",
+        "operationId": "delete_admin_admin_user__delete",
+        "parameters": [
+          {
+            "name": "id_list",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id List"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/user/{admin_id}": {
+      "get": {
+        "tags": ["admin-user"],
+        "summary": "Get Admin Detail",
+        "description": "## 관리자 상세 조회\n\n### Args:\n    admin_id: int = 위 전체 조회 api response의 id 값 주시면 됩니다\n\n### Raises:\n    AdminNotFoundException: Admin not found = 업데이트 하려는 아이디가 없을 때 (404, \"Not Found\")\n\n### Returns:\n    status: (200, 'OK')\n    data: {\n            \"id\": 1,\n            \"name\": \"현빈\",\n            \"dept_name\": \"경영지원\",\n            \"tel_no\": \"010-3333-5555\",\n            \"login_id\": \"Asdfwww\",\n            \"auth_menu_list\": \"최고 관리자\"\n    }",
+        "operationId": "get_admin_detail_admin_user__admin_id__get",
+        "parameters": [
+          {
+            "name": "admin_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Admin Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/manual/": {
+      "get": {
+        "tags": ["admin-manual"],
+        "summary": "Get All",
+        "description": "## 전체 메뉴얼 목록 paginate 하여 보여주기\n\n### Args:\n    page_no: int = 요청할 페이지 번호\n    page_size: int = 한 번에 조회 할 메뉴얼 수, 기본 값 50개 (10/30/50/100)\n    screen_id: Optional[str] = 화면(ID)로 검색\n    manual_name Optional[str] = 메뉴얼 이름으로 검색\n    start_dt, end_dt: Optional[float] = 메뉴얼 변동 일자 (unix time) 넣어주시면 됩니다\n\n### Raises:\n\n### Returns:\n    status: (200, 'OK')\n    data: [\n        {\n            \"id\": 1,\n            \"screen_id\": \"~~\",\n            \"manual_name\": \"00.~~pdf\",\n            \"manual_path\": \"www.~~~.kr\",\n            \"creation_dt\": 1726055378,\n            \"update_dt\": 1726055378\n        },\n        ...\n    ]",
+        "operationId": "get_all_admin_manual__get",
+        "parameters": [
+          {
+            "name": "page_no",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "title": "Page No"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "start_dt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Start Dt"
+            }
+          },
+          {
+            "name": "end_dt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "End Dt"
+            }
+          },
+          {
+            "name": "screen_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Screen Id"
+            }
+          },
+          {
+            "name": "manual_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Manual Name"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["admin-manual"],
+        "summary": "Delete Manual",
+        "description": "## 메뉴얼 다중 삭제\n\n### Args:\n    id_list: str = \"1, 2, 3\" (리스트 [1, 2, 3]가 편하실까요? 문자열 \"1, 2, 3\"이 편하실까요?)\n\n### Raises:\n    ManualException: id list's element is not number = id_list에 숫자가 아닌 게 끼어있을 때 (400, \"Bad Request\")\n\n### Returns:\n    status: (200, 'OK')\n    data: null",
+        "operationId": "delete_manual_admin_manual__delete",
+        "parameters": [
+          {
+            "name": "id_list",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id List"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/manual/embedding/{manual_id}": {
+      "get": {
+        "tags": ["admin-manual"],
+        "summary": "Get One Manual",
+        "description": "## 메뉴얼 id로 상세 조회 (좌측의 source/subject/content 페이지 별로 반환)\n## id 값은 페이지에 해당하는 id이며,\n## 상세 조회 시 그 메뉴얼에 해당하는 전체 페이지를 스크롤 형식으로 띄워줌.\n## 이 경우, 요청한 id가 처음으로 보여야 함\n\n### Args:\n    manual_id: int = 위 전체 조회 api response의 id 값 주시면 됩니다\n\n### Raises:\n\n### Returns:\n    status: (200, 'OK')\n    data: {\n        \"manual_name\": \"테스트1\",\n        \"page\": [\n            {\n                \"id\": 1,\n                \"source\": \"테스트1-1\",\n                \"subject\": \"어쩌구저쩌구\",\n                \"content\": \"어쩌구저쩌구\",\n                \"image\": null\n            },\n            {\n                \"id\": 2,\n                \"source\": \"테스트1-2\",\n                \"subject\": \"어쩌구저쩌구\",\n                \"content\": \"어쩌구저쩌구\",\n                \"image\": null\n            },\n            {\n                \"id\": 3,\n                \"source\": \"테스트1-3\",\n                \"subject\": \"어쩌구저쩌구\",\n                \"content\": \"어쩌구저쩌구\",\n                \"image\": null\n            }\n        ]\n    }",
+        "operationId": "get_one_manual_admin_manual_embedding__manual_id__get",
+        "parameters": [
+          {
+            "name": "manual_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Manual Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["admin-manual"],
+        "summary": "Update Manual",
+        "description": "## 메뉴얼 개별 수정 (메뉴얼 등록 팝업 2)\n## POST /embedding에서는 저장 버튼 눌러야 실제 테이블에 저장 되지만, 여기는 개별 수정 시 바로 반영된다\n\n### Args:\n    manual_id: 변경하려는 메뉴얼 번호 (path 말고 body 안에 넣는 게 나을까요?)\n    update_type: int = 변경 종류 (source = 0, subject = 1, content=2)\n\n### Raises:\n\n### Returns:\n    status: (200, 'OK')\n    data: null",
+        "operationId": "update_manual_admin_manual_embedding__manual_id__patch",
+        "parameters": [
+          {
+            "name": "manual_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Manual Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateManualRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/manual/preprocess/{set_id}": {
+      "get": {
+        "tags": ["admin-manual"],
+        "summary": "Get One Preprocess",
+        "description": "## /admin/manual/preprocess 요청 후 메뉴얼 등록 팝업 1의 값\n\n### Args:\n    set_id: int = POST /admin/manual/preprocess api response 값 주시면 됩니다\n\n### Raises:\n\n### Returns:\n    status: (200, 'OK')\n    \"data\": {\n        \"manual_name\": \"테스트1\",\n        \"page\": [\n            {\n                \"id\": 1,\n                \"source\": \"테스트1-1\",\n                \"subject\": \"어쩌구저쩌구\",\n                \"content\": \"어쩌구저쩌구\",\n                \"image\": null\n            },\n            {\n                \"id\": 2,\n                \"source\": \"테스트1-2\",\n                \"subject\": \"어쩌구저쩌구\",\n                \"content\": \"어쩌구저쩌구\",\n                \"image\": null\n            },\n            {\n                \"id\": 3,\n                \"source\": \"테스트1-3\",\n                \"subject\": \"어쩌구저쩌구\",\n                \"content\": \"어쩌구저쩌구\",\n                \"image\": null\n            }\n        ]\n    }",
+        "operationId": "get_one_preprocess_admin_manual_preprocess__set_id__get",
+        "parameters": [
+          {
+            "name": "set_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Set Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/manual/file": {
+      "post": {
+        "tags": ["admin-manual"],
+        "summary": "Upload Manual",
+        "description": "## 파일 업로드 및 파일 이름 중복 체크 (메뉴얼 등록 1)\n## 아직 ncp 계정이 없어서.. 실제 업로드는 하지 않고 있습니다\n\n### Args:\n    file: pdf 메뉴얼 파일\n\n### Raises:\n    DuplicateManualException: 이미 동일한 이름의 파일이 upload 되어 있는 경우 (파일이 동일 하지 않아도 이름이 동일한 경우)\n        \"Duplicate Manual Name Not Allowed\" (422, \"Unprocessable Entity\")\n\n### Returns:\n    status: (200, 'OK')\n    data: 파일 명 반환",
+        "operationId": "upload_manual_admin_manual_file_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_manual_admin_manual_file_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/manual/image": {
+      "patch": {
+        "tags": ["admin-manual"],
+        "summary": "Upload Image",
+        "description": "## 메뉴얼 등록/수정에서 데이터 추가 시 이미지 업로드 용\n## 아직 ncp 계정이 없어서.. 실제 업로드는 하지 않고 있습니다\n\n### Args:\n    manual_name: 이미지 파일 저장 경로를 위해...\n    image: 이미지 파일\n\n### Raises:\n\n### Returns:\n    status: (200, 'OK')\n    data: 파일 저장 경로 반환",
+        "operationId": "upload_image_admin_manual_image_patch",
+        "parameters": [
+          {
+            "name": "manual_name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Manual Name"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_image_admin_manual_image_patch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/manual/preprocess": {
+      "post": {
+        "tags": ["admin-manual"],
+        "summary": "Create Preprocessing",
+        "description": "## 메뉴얼 전처리 (메뉴얼 등록 1)\n\n### Args:\n    manual_name: 위의 POST /admin/manual/file의 response 값 넣어주시면 됩니다\n    pattern1, pattern1_1, pattern2: Optional[str] = {\"패턴\": \"입력 페이지\"}\n    현재 패턴은 1, 1_1, 2의 3종류이며, 제외 페이지는 exclude로 보내주실 수 있을까요?)\n    request 예시\n    {\n        \"manual_name\": \"~~\",\n        \"pattern1\": \"12, 20~23\",\n        \"pattern1_1\": \"1~11\",\n        \"pattern2\": \"13~14, 16~19\",\n        \"exclude\": \"24~40\"\n    }\n\n### Raises:\n\n### Returns:\n    status: (201, 'Created')\n    data: 생성된 메뉴얼 id 반환",
+        "operationId": "create_preprocessing_admin_manual_preprocess_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePreprocessRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/manual/embedding": {
+      "put": {
+        "tags": ["admin-manual"],
+        "summary": "Add Data",
+        "description": "## 메뉴얼 수정 시 데이터 추가 (메뉴얼 등록 팝업 2)\n\n### Args:\n    manual_id: int (위에서 GET /admin/manual/embedding/{manual_id}의 manual_id 값)\n    source: Optional[str] = None\n    subject: Optional[str] = None\n    content: str\n    image_path: Optional[str] = None\n\n### Raises:\n\n### Returns:\n    status: (200, 'OK')\n    data: null",
+        "operationId": "add_data_admin_manual_embedding_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDataRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["admin-manual"],
+        "summary": "Create Collection",
+        "description": "## 메뉴얼 전처리 완료 후 개별 수정 (메뉴얼 등록 2 팝업)\n\n### Args:\n    preprocess_id: int (GET /admin/manual/preprocess/{preprocess_id})의 return 값\n    updated_pages: List[dict] 변경할 값에 해당하는 데이터만 보내주시면 됩니다\n        \"updated_pages\": [\n            {\n                \"id\": 1,\n                \"source\": \"string\",\n                \"subject\": \"string\",\n                \"content\": \"string\",\n                \"image\": \"string\"\n            },\n            ...\n        ]\n\n### Raises:\n\n### Returns:\n    status: (201, 'Created')\n    data: null",
+        "operationId": "create_collection_admin_manual_embedding_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCollectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["admin-manual"],
+        "summary": "Delete Collection",
+        "description": "## 벡터db 데이터 삭제\n## 데이터 임베딩용, 안 씀",
+        "operationId": "delete_collection_admin_manual_embedding_delete",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "deprecated": true
+      }
+    },
+    "/admin/dashboard/use/user": {
+      "get": {
+        "tags": ["admin-use"],
+        "summary": "Get User All Use",
+        "description": "## 일반 사용자 챗봇 사용량 히스토리\n\n### Args:\n    page_no: int = 요청할 페이지 번호\n    page_size: int = 한 번에 조회 할 메뉴얼 수, 기본 값 50개 (10/30/50/100)\n    start_dt, end_dt: float= 조회할 사용일자(unixtime)\n\n### Returns:\n    \"data\": {\n        \"response\": [\n          {\n            \"usage_id\": 1,\n            \"hospital_name\": \"위데이터랩\",\n            \"user_name\": \"user1\",\n            \"call_path\": \"화면\",\n            \"use_token_cnt\": 20,\n            \"use_amount\": \"0.500000000000000000\",\n            \"question_content\": \"질문 내용입니다\",  # 최대 100자만 가져옵니다\n            \"answer_content\": \"답변 내용입니다\", # 최대 100자만 가져옵니다\n            \"satisfaction_rate\": 3.5,\n            \"creation_dt\": 1724029200\n          },\n          ...\n        ],\n        \"total_pages\": 1,\n        \"page_size\": 10,\n        \"current_page_no\": 1",
+        "operationId": "get_user_all_use_admin_dashboard_use_user_get",
+        "parameters": [
+          {
+            "name": "page_no",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "title": "Page No"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "start_dt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": 1640962800.0,
+              "title": "Start Dt"
+            }
+          },
+          {
+            "name": "end_dt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": 1727673941.48126,
+              "title": "End Dt"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dashboard/use/user/summary": {
+      "get": {
+        "tags": ["admin-use"],
+        "summary": "Get User Use Summary",
+        "description": "## 일반 사용자 챗봇 사용량 통계\n\n### Args\n    date_filter: Optional[str] = 날짜 필터 조건 -> 종류: all(default)/year/month/day\n    detail_filter: Optional[str] = 상세 필터 조건 -> 종류: all(default)/hospital/call_path\n    start_dt, end_dt: float =  조회할 사용일자(unix time)\n\n### Returns\n      \"data\": {\n            \"response\": [\n              {\n                \"detail\": \"화면\",\n                \"total_token_cnt\": 20,\n                \"total_use_amount\": \"0.500000000000000000\",\n                \"date\": \"2024.07\"\n              },\n              ...\n            ],\n            \"total_pages\": 1,\n            \"page_size\": 50,\n            \"current_page_no\": 1\n      }",
+        "operationId": "get_user_use_summary_admin_dashboard_use_user_summary_get",
+        "parameters": [
+          {
+            "name": "page_no",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "title": "Page No"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "start_dt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": 1640962800.0,
+              "title": "Start Dt"
+            }
+          },
+          {
+            "name": "end_dt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": 1727673941.481958,
+              "title": "End Dt"
+            }
+          },
+          {
+            "name": "date_filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "all",
+              "title": "Date Filter"
+            }
+          },
+          {
+            "name": "detail_filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "all",
+              "title": "Detail Filter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dashboard/use/user/{use_id}": {
+      "get": {
+        "tags": ["admin-use"],
+        "summary": "Get User Use",
+        "description": "## 일반 사용자 챗봇 사용 상세\n\n### Args:\n    use_id: int = 상세 조회할 사용 번호\n\n### Returns:\n    \"data\": {\n        \"use_id\": 6,\n        \"hospital\": \"서울대병원\",\n        \"username\": \"user1\",\n        \"call_path\": \"api\",\n        \"use_token_cnt\": 20,\n        \"use_amount\": \"0.500000000000000000\",\n        \"question\": \"질문6\",\n        \"answer\": \"답변6\",\n        \"satisfaction_rate\": 5,\n        \"creation_dt\": 1726621200\n      }",
+        "operationId": "get_user_use_admin_dashboard_use_user__use_id__get",
+        "parameters": [
+          {
+            "name": "use_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Use Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dashboard/use/admin": {
+      "get": {
+        "tags": ["admin-use"],
+        "summary": "Get Admin All Use",
+        "description": "## 관리자 사용량 데이터 전체 조회\n\n### Args\n    start_dt, end_dt: float= 사용 일자(unix time)\n\n### Returns\n    \"response\": [\n      {\n        \"use_id\": 1,\n        \"admin_name\": \"Jenny\",\n        \"use_type\": \"1\",\n        \"screen_id\": \"screen1\",\n        \"manual_name\": \"manual1\",\n        \"use_token_cnt\": 20,\n        \"use_amount\": \"0.500000000000000000\",\n        \"creation_dt\": 1726707600\n      },\n        ...\n    ],\n    \"total_pages\": 1,\n    \"page_size\": 50,\n    \"current_page_no\": 1",
+        "operationId": "get_admin_all_use_admin_dashboard_use_admin_get",
+        "parameters": [
+          {
+            "name": "page_no",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "title": "Page No"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "start_dt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": 1640962800.0,
+              "title": "Start Dt"
+            }
+          },
+          {
+            "name": "end_dt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": 1727673941.48126,
+              "title": "End Dt"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/dashboard/use/admin/summary": {
+      "get": {
+        "tags": ["admin-use"],
+        "summary": "Get Admin Use Summary",
+        "description": "## 관리자 사용량 통계\n\n### Args\n    date_filter: Optional[str] = 날짜 필터 조건 -> 종류: all(default)/year/month/day\n    detail_filter: Optional[str] = 상세 필터 조건 -> 종류: all(default)/admin/type\n    start_dt, end_dt: float =  조회할 사용 일자(unix time)\n\n### Returns\n      \"data\": {\n        \"response\": [\n          {\n            \"detail\": \"전처리\",\n            \"total_token_cnt\": 80,\n            \"total_use_amount\": \"2.000000000000000000\",\n            \"date\": \"2020.07 - 2024.09\"\n          },\n          {\n            \"detail\": \"임베딩\",\n            \"total_token_cnt\": 40,\n            \"total_use_amount\": \"1.000000000000000000\",\n            \"date\": \"2020.07 - 2024.09\"\n          }\n        ],\n        \"total_pages\": 1,\n        \"page_size\": 50,\n        \"current_page_no\": 1\n      }",
+        "operationId": "get_admin_use_summary_admin_dashboard_use_admin_summary_get",
+        "parameters": [
+          {
+            "name": "page_no",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "title": "Page No"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "start_dt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": 1640962800.0,
+              "title": "Start Dt"
+            }
+          },
+          {
+            "name": "end_dt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": 1727673941.481958,
+              "title": "End Dt"
+            }
+          },
+          {
+            "name": "date_filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "all",
+              "title": "Date Filter"
+            }
+          },
+          {
+            "name": "detail_filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": "all",
+              "title": "Detail Filter"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth-check": {
+      "get": {
+        "summary": "Auth Check",
+        "operationId": "auth_check_auth_check_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health-check": {
+      "get": {
+        "summary": "Health Check",
+        "operationId": "health_check_health_check_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/database-check": {
+      "get": {
+        "summary": "Database Check",
+        "operationId": "database_check_database_check_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AddDataRequest": {
+        "properties": {
+          "manual_id": {
+            "type": "integer",
+            "title": "Manual Id"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "image_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Path"
+          }
+        },
+        "type": "object",
+        "required": ["manual_id", "content"],
+        "title": "AddDataRequest",
+        "example": {
+          "content": "string",
+          "image_path": "string",
+          "manual_id": 1,
+          "source": "string",
+          "subject": "string"
+        }
+      },
+      "Body_upload_image_admin_manual_image_patch": {
+        "properties": {
+          "image": {
+            "type": "string",
+            "format": "binary",
+            "title": "Image"
+          }
+        },
+        "type": "object",
+        "required": ["image"],
+        "title": "Body_upload_image_admin_manual_image_patch"
+      },
+      "Body_upload_manual_admin_manual_file_post": {
+        "properties": {
+          "manual_file": {
+            "type": "string",
+            "format": "binary",
+            "title": "Manual File"
+          }
+        },
+        "type": "object",
+        "required": ["manual_file"],
+        "title": "Body_upload_manual_admin_manual_file_post"
+      },
+      "CreateAdminRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "dept_name": {
+            "type": "string",
+            "title": "Dept Name"
+          },
+          "tel_no": {
+            "type": "string",
+            "title": "Tel No"
+          },
+          "login_id": {
+            "type": "string",
+            "title": "Login Id"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          },
+          "password_check": {
+            "type": "string",
+            "title": "Password Check"
+          },
+          "auth_menu_list": {
+            "type": "string",
+            "title": "Auth Menu List"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "dept_name",
+          "tel_no",
+          "login_id",
+          "password",
+          "password_check",
+          "auth_menu_list"
+        ],
+        "title": "CreateAdminRequest",
+        "example": {
+          "auth_menu_list": "1,3",
+          "dept_name": "경영지원",
+          "login_id": "admin2@gmail.com",
+          "name": "손예진",
+          "password": "password!",
+          "password_check": "password!",
+          "tel_no": "010-3333-3333"
+        }
+      },
+      "CreateCollectionRequest": {
+        "properties": {
+          "set_id": {
+            "type": "integer",
+            "title": "Set Id"
+          },
+          "updated_pages": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/ManualPage"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated Pages"
+          }
+        },
+        "type": "object",
+        "required": ["set_id"],
+        "title": "CreateCollectionRequest",
+        "example": {
+          "set_id": 1,
+          "updated_pages": [
+            {
+              "content": "string",
+              "id": 1,
+              "image_path": "string",
+              "source": "string",
+              "subject": "string"
+            },
+            {
+              "content": "string",
+              "id": 3,
+              "image_path": "string",
+              "source": "string",
+              "subject": "string"
+            }
+          ]
+        }
+      },
+      "CreatePreprocessRequest": {
+        "properties": {
+          "manual_name": {
+            "type": "string",
+            "title": "Manual Name"
+          },
+          "pattern1": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pattern1"
+          },
+          "pattern1_1": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pattern1 1"
+          },
+          "pattern2": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pattern2"
+          },
+          "exclude": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exclude"
+          }
+        },
+        "type": "object",
+        "required": ["manual_name"],
+        "title": "CreatePreprocessRequest",
+        "example": {
+          "exclude": "",
+          "manual_name": "00.기준정보_PHIS_설치및로그인.pdf",
+          "pattern1": "",
+          "pattern1_1": "",
+          "pattern2": ""
+        }
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ManualPage": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "subject": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subject"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "image_path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Path"
+          }
+        },
+        "type": "object",
+        "required": ["id", "source", "subject", "content", "image_path"],
+        "title": "ManualPage"
+      },
+      "QuestionRequest": {
+        "properties": {
+          "question_content": {
+            "type": "string",
+            "title": "Question Content"
+          },
+          "call_path": {
+            "type": "string",
+            "pattern": "^(user|api)$",
+            "title": "Call Path",
+            "default": "api"
+          }
+        },
+        "type": "object",
+        "required": ["question_content"],
+        "title": "QuestionRequest"
+      },
+      "RateRequest": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "dgstfn": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Dgstfn"
+          }
+        },
+        "type": "object",
+        "required": ["id", "dgstfn"],
+        "title": "RateRequest"
+      },
+      "ReportRequest": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "report_content": {
+            "type": "string",
+            "title": "Report Content"
+          }
+        },
+        "type": "object",
+        "required": ["id", "report_content"],
+        "title": "ReportRequest"
+      },
+      "SignInRequest": {
+        "properties": {
+          "login_id": {
+            "type": "string",
+            "title": "유저 이메일",
+            "description": "",
+            "examples": ["root@gmail.com"]
+          },
+          "password": {
+            "type": "string",
+            "title": "유저 비밀번호",
+            "description": "",
+            "examples": ["password!"]
+          }
+        },
+        "type": "object",
+        "required": ["login_id", "password"],
+        "title": "SignInRequest",
+        "example": {
+          "login_id": "admin",
+          "password": "admin"
+        }
+      },
+      "UpdateAdminRequest": {
+        "properties": {
+          "admin_id": {
+            "type": "integer",
+            "title": "Admin Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "dept_name": {
+            "type": "string",
+            "title": "Dept Name"
+          },
+          "tel_no": {
+            "type": "string",
+            "title": "Tel No"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          },
+          "password_check": {
+            "type": "string",
+            "title": "Password Check"
+          },
+          "auth_menu_list": {
+            "type": "string",
+            "title": "Auth Menu List"
+          }
+        },
+        "type": "object",
+        "required": [
+          "admin_id",
+          "dept_name",
+          "tel_no",
+          "password",
+          "password_check",
+          "auth_menu_list"
+        ],
+        "title": "UpdateAdminRequest",
+        "example": {
+          "admin_id": 1,
+          "auth_menu_list": "1,3",
+          "dept_name": "경영지원",
+          "name": "손예진",
+          "password": "password!",
+          "password_check": "password!",
+          "tel_no": "010-3333-3333"
+        }
+      },
+      "UpdateAnswerRequest": {
+        "properties": {
+          "answer_content": {
+            "type": "string",
+            "title": "Answer Content"
+          }
+        },
+        "type": "object",
+        "required": ["answer_content"],
+        "title": "UpdateAnswerRequest",
+        "example": {
+          "answer_content": "Updated answer content"
+        }
+      },
+      "UpdateManualRequest": {
+        "properties": {
+          "update_type": {
+            "type": "integer",
+            "title": "Update Type"
+          },
+          "data": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data"
+          }
+        },
+        "type": "object",
+        "required": ["data"],
+        "title": "UpdateManualRequest",
+        "example": {
+          "data": "string",
+          "update_type": 1
+        }
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": ["loc", "msg", "type"],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
