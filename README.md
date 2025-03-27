@@ -39,7 +39,9 @@
 ✔️ **관리자 매뉴얼 관리 자동화로 유지보수 효율 증가**  
 ✔️ **토큰 사용량 모니터링을 통한 비용 관리 최적화**  
 
-![alt text](image.png)
+<div style="text-align: center;">
+  <img src="./assets/image.png" alt="그림. 챗봇 Answer Process">
+</div>
 
 
 ### 기술 스택
